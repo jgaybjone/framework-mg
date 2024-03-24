@@ -43,9 +43,7 @@ class MainVerticle : AbstractVerticle() {
     val respBody = JsonObject()
     respBody.put("latestVersion", "")
     val frameworkDir = File("$baseDir/${it.pathParam("framework")}")
-    if (!frameworkDir.exists()) {
-      frameworkDir.mkdir()
-    } else {
+    if (frameworkDir.exists()) {
       val files = frameworkDir.listFiles()?.filter { f -> f.isDirectory }
       if (files?.isNotEmpty() == true) {
         val first = files.max()
