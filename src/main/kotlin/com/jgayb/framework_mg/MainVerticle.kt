@@ -90,7 +90,8 @@ class MainVerticle : AbstractVerticle() {
 
   private var fileDownload: Handler<RoutingContext> = Handler {
     val path = it.request().path()
-    val file = File("$baseDir/$path".replace("framework/",""))
+    val filePath = "$baseDir/$path".replace("framework/","")
+    val file = File(filePath)
     val response = it.response()
     response
       .setStatusCode(200)
