@@ -32,6 +32,7 @@ dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   implementation("io.vertx:vertx-web")
   implementation("io.vertx:vertx-lang-kotlin")
+  implementation("io.vertx:vertx-mqtt")
   implementation(kotlin("stdlib-jdk8"))
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")

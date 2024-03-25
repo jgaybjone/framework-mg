@@ -1,13 +1,18 @@
 package com.jgayb.framework_mg
 
+import io.netty.handler.codec.mqtt.MqttQoS
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Promise
+import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
+import io.vertx.mqtt.MqttClient
+import io.vertx.mqtt.MqttClientOptions
 import java.io.File
+import java.util.*
 
 class MainVerticle : AbstractVerticle() {
 
@@ -35,6 +40,7 @@ class MainVerticle : AbstractVerticle() {
           startPromise.fail(http.cause());
         }
       }
+    mqtt()
   }
 
   private var versionHandler: Handler<RoutingContext> = Handler {
@@ -98,5 +104,37 @@ class MainVerticle : AbstractVerticle() {
       .putHeader("Content-Length", "${file.length()}")
       .putHeader("Content-Disposition", "attachment; filename=" + file.getName())
       .sendFile(file.absolutePath)
+  }
+
+  private fun mqtt() {
+    val clientOptions = MqttClientOptions()
+    clientOptions.clientId = UUID.randomUUID().toString().replace("-", "")
+    clientOptions.username = "YzyMqttClient"
+    clientOptions.password = "YzyMqttClient"
+    val mqttClient = MqttClient.create(vertx, clientOptions)
+    mqttClient.connect(1883, "192.168.5.8")
+    vertx.setPeriodic(3600000) {
+      mqttClient.publish(
+        "homeassistant/switch/building/door_lock/config", Buffer.buffer("""
+          {
+            "unique_id": "building-door-lock-001",
+            "name": "大楼门禁",
+            "icon": "mdi:gesture-tap-button",
+            "state_topic": "homeassistant/switch/building/door_lock/state",
+            "command_topic": "homeassistant/switch/building/door_lock/set",
+            "json_attributes_topic": "homeassistant/switch/building/door_lock/attributes",
+            "device": {
+              "identifiers": "door-lock-001",
+              "manufacturer": "华为",
+              "model": "LK",
+              "name": "esp32",
+              "sw_version": "1.0"
+            }
+          }
+          """),
+        MqttQoS.AT_MOST_ONCE, false, false
+      )
+    }
+
   }
 }
