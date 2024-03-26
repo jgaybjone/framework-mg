@@ -34,6 +34,7 @@ class MainVerticle : AbstractVerticle() {
     router.route(HttpMethod.GET, "/health")
       .handler {
         if (mqttClient == null || (mqttClient?.isConnected == false)) {
+          println("MQTT client is not connected")
           it.response().setStatusCode(500).end()
         } else {
           it.response().setStatusCode(200).end()
@@ -130,6 +131,9 @@ class MainVerticle : AbstractVerticle() {
     this.mqttClient = MqttClient.create(vertx, clientOptions)
     mqttClient?.connect(1883, "192.168.5.8")
     vertx.setPeriodic(3600000) {
+      if (mqttClient?.isConnected == false) {
+        mqttClient?.connect(1883, "192.168.5.8")
+      }
       mqttClient?.publish(
         "homeassistant/switch/building/door_lock/config", Buffer.buffer(
           """
