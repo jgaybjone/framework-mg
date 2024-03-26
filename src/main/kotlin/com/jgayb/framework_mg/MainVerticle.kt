@@ -16,6 +16,8 @@ import java.util.*
 
 class MainVerticle : AbstractVerticle() {
 
+  private var mqttClient: MqttClient? = null
+
   //remote_door_lock
   private val baseDir = System.getenv().getOrDefault("BASE_DIR", System.getenv()["PWD"])
   override fun start(startPromise: Promise<Void>) {
@@ -28,6 +30,15 @@ class MainVerticle : AbstractVerticle() {
 
     router.route(HttpMethod.GET, "/framework/:framework/:version/*")
       .handler(fileDownload)
+
+    router.route(HttpMethod.GET, "/health")
+      .handler {
+        if (mqttClient == null || (mqttClient?.isConnected == false)) {
+          it.response().setStatusCode(500).end()
+        } else {
+          it.response().setStatusCode(200).end()
+        }
+      }
 
     vertx
       .createHttpServer()
@@ -116,10 +127,10 @@ class MainVerticle : AbstractVerticle() {
     clientOptions.keepAliveInterval = 60
     clientOptions.reconnectAttempts = 10
     clientOptions.reconnectInterval = 10000
-    val mqttClient = MqttClient.create(vertx, clientOptions)
-    mqttClient.connect(1883, "192.168.5.8")
-    vertx.setPeriodic(3600000) {
-      mqttClient.publish(
+    this.mqttClient = MqttClient.create(vertx, clientOptions)
+    mqttClient?.connect(1883, "192.168.5.8")
+    vertx.setPeriodic(5000) {
+      mqttClient?.publish(
         "homeassistant/switch/building/door_lock/config", Buffer.buffer(
           """
           {
