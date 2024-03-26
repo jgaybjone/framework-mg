@@ -129,7 +129,7 @@ class MainVerticle : AbstractVerticle() {
     clientOptions.reconnectInterval = 10000
     this.mqttClient = MqttClient.create(vertx, clientOptions)
     mqttClient?.connect(1883, "192.168.5.8")
-    vertx.setPeriodic(5000) {
+    vertx.setPeriodic(3600000) {
       mqttClient?.publish(
         "homeassistant/switch/building/door_lock/config", Buffer.buffer(
           """
