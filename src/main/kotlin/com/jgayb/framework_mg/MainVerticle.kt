@@ -111,11 +111,17 @@ class MainVerticle : AbstractVerticle() {
     clientOptions.clientId = UUID.randomUUID().toString().replace("-", "")
     clientOptions.username = "YzyMqttClient"
     clientOptions.password = "YzyMqttClient"
+    clientOptions.isAutoKeepAlive = true
+    clientOptions.isCleanSession = false
+    clientOptions.keepAliveInterval = 60
+    clientOptions.reconnectAttempts = 10
+    clientOptions.reconnectInterval = 10000
     val mqttClient = MqttClient.create(vertx, clientOptions)
     mqttClient.connect(1883, "192.168.5.8")
     vertx.setPeriodic(3600000) {
       mqttClient.publish(
-        "homeassistant/switch/building/door_lock/config", Buffer.buffer("""
+        "homeassistant/switch/building/door_lock/config", Buffer.buffer(
+          """
           {
             "unique_id": "building-door-lock-001",
             "name": "大楼门禁",
@@ -131,7 +137,8 @@ class MainVerticle : AbstractVerticle() {
               "sw_version": "1.0"
             }
           }
-          """),
+          """
+        ),
         MqttQoS.AT_MOST_ONCE, false, false
       )
     }
